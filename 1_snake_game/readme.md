@@ -23,3 +23,5 @@ I used below tool to convert python file to .exe file
 
 https://pypi.org/project/auto-py-to-exe/
 
+https://www.youtube.com/watch?v=8dfePlONtls&ab_channel=freeCodeCamp.org
+
