@@ -3,6 +3,7 @@ from pygame.locals import KEYDOWN, QUIT, K_UP, K_LEFT, K_DOWN, K_RIGHT, K_RETURN
 from time import sleep
 from Apple import Apple
 from Snake import Snake
+from Rock import Rock
 
 COLOUR_BG_SCORE = (200, 200, 200)
 COLOUR_FONT_SCORE = (68, 165, 108)
@@ -25,8 +26,11 @@ FILE_IMAGE_BK_GAME = DIR_RESOURCES + "bgRealGrass_1000x800.jpg"
 FILE_IMAGE_BK_END = DIR_RESOURCES + "background.jpg"
 
 FILE_SOUND_EFFECT_CRASH = DIR_RESOURCES + "crash.mp3"
-FILE_SOUND_EFFECT_DING = DIR_RESOURCES + "ding.mp3"
+FILE_SOUND_EFFECT_DING = DIR_RESOURCES + "appleBite.mp3"
 FILE_SOUND_MUSIC_BG_MAIN = DIR_RESOURCES + "bg_music_1.mp3"
+
+PROP_COORDINATES_X = 0
+PROP_COORDINATES_Y = 1
 
 PROP_FONT_STYLE_SCORE = "arial"
 PROP_FONT_SIZE_SCORE = 30
@@ -35,6 +39,11 @@ PROP_MOVE_DELAY_MAX = 1
 PROP_MOVE_DELAY_MIN = 0.025
 PROP_MOVE_DELAY_INCREMENT = 0.025
 PROP_MOVE_DELAY_INIT = PROP_MOVE_DELAY_MAX / 8
+
+PROP_MOVE_DIRECTION_DOWN = 0
+PROP_MOVE_DIRECTION_RIGHT = 1
+PROP_MOVE_DIRECTION_UP = 2
+PROP_MOVE_DIRECTION_LEFT = 3
 
 PROP_MOVE_SPEED_DOWN = 0
 PROP_MOVE_SPEED_RESET = -1
@@ -47,14 +56,24 @@ PROP_POSITION_SCORE_MSB = (820, 10)
 PROP_POSITION_SCORE_MID = (880, 10)
 PROP_POSITION_SCORE_LSB = (940, 10)
 
+PROP_RETRIEVE_ORIENT_CURRENT = 0
+PROP_RETRIEVE_ORIENT_PREVIOUS = 1
+PROP_RETRIEVE_POS_CURRENT = 0
+PROP_RETRIEVE_POS_PREVIOUS = 1
+
 PROP_SIZE_BLOCK = 30
 PROP_SIZE_SCREEN_WIDTH = 1000
 PROP_SIZE_SCREEN_HEIGHT = 800
 PROP_SIZE_SCREEN = (PROP_SIZE_SCREEN_WIDTH, PROP_SIZE_SCREEN_HEIGHT)
 PROP_SIZE_SNAKE_INIT = 1
 
+PROP_SOUND_MUSIC_BG_LOOP = -1
+PROP_SOUND_MUSIC_BG_START = 2
+PROP_SOUND_MUSIC_BG_FADE = 2000
+
 SOUND_EFFECT_CRASH = 0
 SOUND_EFFECT_DING = 1
+SOUND_VOLUME_MAIN = 0.1
 
 class Game:
     def __init__(self):
@@ -62,6 +81,7 @@ class Game:
         pygame.display.set_caption("Codebasics Snake And Apple Game")
 
         pygame.mixer.init()
+        pygame.mixer.music.set_volume(SOUND_VOLUME_MAIN)
         self.play_background_music()
 
         self.surface = pygame.display.set_mode(PROP_SIZE_SCREEN)
@@ -74,10 +94,12 @@ class Game:
         self.snake.draw()
         self.apple = Apple(self.surface)
         self.apple.draw()
+        self.rock = Rock(self.surface)
+        self.rock.draw()
 
     def play_background_music(self):
         pygame.mixer.music.load(FILE_SOUND_MUSIC_BG_MAIN)
-        pygame.mixer.music.play(-1, 0)
+        pygame.mixer.music.play(PROP_SOUND_MUSIC_BG_LOOP, PROP_SOUND_MUSIC_BG_START, PROP_SOUND_MUSIC_BG_FADE)
 
     def play_sound(self, sound_name):
         if sound_name == SOUND_EFFECT_CRASH:
@@ -90,16 +112,18 @@ class Game:
     def reset(self):
         self.snake = Snake(self.surface, PROP_SIZE_SNAKE_INIT)
         self.apple = Apple(self.surface)
+        self.rock = Rock(self.surface)
         self.adjust_speed(PROP_MOVE_SPEED_RESET, None)
 
-    def is_collision(self, x1, y1, x2, y2):
-        if x1 >= x2 and x1 < x2 + PROP_SIZE_BLOCK:
-            if y1 >= y2 and y1 < y2 + PROP_SIZE_BLOCK:
+    def is_collision(self, snake, object):
+        if snake[PROP_COORDINATES_X] >= object[PROP_COORDINATES_X] and snake[PROP_COORDINATES_X] < object[PROP_COORDINATES_X] + PROP_SIZE_BLOCK:
+            if snake[PROP_COORDINATES_Y] >= object[PROP_COORDINATES_Y] and snake[PROP_COORDINATES_Y] < object[PROP_COORDINATES_Y] + PROP_SIZE_BLOCK:
                 return True
         return False
 
-    def is_boundary_collision(self, x1, y1, width, height):
-        if x1 < 0 or x1 + PROP_SIZE_BLOCK > width or y1 < 0 or y1 > height:
+    def is_boundary_collision(self, snake, screen_size):
+        if snake[PROP_COORDINATES_X] < 0 or snake[PROP_COORDINATES_X] + PROP_SIZE_BLOCK > screen_size[PROP_COORDINATES_X] or \
+                snake[PROP_COORDINATES_Y] < 0 or snake[PROP_COORDINATES_Y] > screen_size[PROP_COORDINATES_Y]:
             return True
         return False
 
@@ -123,13 +147,15 @@ class Game:
 
     def play(self):
         self.render_background(FILE_IMAGE_BK_GAME)
-        self.snake.walk()
-        self.apple.draw()
         self.display_score()
+        self.apple.draw()
+        self.rock.draw()
+        self.snake.walk()
+
         pygame.display.flip()
 
         # snake eating apple scenario
-        if self.is_collision(self.snake.x[0], self.snake.y[0], self.apple.x, self.apple.y):
+        if self.is_collision(self.snake.head.get_position()[PROP_RETRIEVE_POS_CURRENT], (self.apple.x, self.apple.y)):
             self.play_sound(SOUND_EFFECT_DING)
 
             if self.snake.length > 99:
@@ -149,14 +175,24 @@ class Game:
             self.snake.increase_length()
             self.apple.move()
 
-        # snake colliding with itself
-        for i in range(1, self.snake.length):
-            if self.is_collision(self.snake.x[0], self.snake.y[0], self.snake.x[i], self.snake.y[i]):
+        # snake colliding with rock
+        if self.is_collision(self.snake.head.get_position()[PROP_RETRIEVE_POS_CURRENT], (self.rock.x, self.rock.y)):
+            self.play_sound(SOUND_EFFECT_CRASH)
+            raise Exception("Snake collided with the rock")
+
+        # snake colliding with body
+        for i in range(len(self.snake.body) - 1, 0, -1):
+            if self.is_collision(self.snake.head.get_position()[PROP_RETRIEVE_POS_CURRENT], self.snake.body[i].get_position()[PROP_RETRIEVE_POS_CURRENT]):
                 self.play_sound(SOUND_EFFECT_CRASH)
                 raise Exception("Snake collided with itself")
 
+        # snake colliding with tail
+        if self.is_collision(self.snake.head.get_position()[PROP_RETRIEVE_POS_CURRENT], self.snake.tail.get_position()[PROP_RETRIEVE_POS_CURRENT]):
+            self.play_sound(SOUND_EFFECT_CRASH)
+            raise Exception("Snake collided with the rock")
+
         # snake colliding with the boundary
-        if self.is_boundary_collision(self.snake.x[0], self.snake.y[0], PROP_SIZE_SCREEN_WIDTH, PROP_SIZE_SCREEN_HEIGHT):
+        if self.is_boundary_collision(self.snake.head.get_position()[PROP_RETRIEVE_POS_CURRENT], PROP_SIZE_SCREEN):
             self.play_sound(SOUND_EFFECT_CRASH)
             raise Exception("Snake collided with the boundary")
 
@@ -192,16 +228,16 @@ class Game:
                         pygame.mixer.music.unpause()
 
                     if event.key == K_LEFT:
-                        self.snake.move_left()
+                        self.snake.turn(PROP_MOVE_DIRECTION_LEFT)
 
                     if event.key == K_RIGHT:
-                        self.snake.move_right()
+                        self.snake.turn(PROP_MOVE_DIRECTION_RIGHT)
 
                     if event.key == K_UP:
-                        self.snake.move_up()
+                        self.snake.turn(PROP_MOVE_DIRECTION_UP)
 
                     if event.key == K_DOWN:
-                        self.snake.move_down()
+                        self.snake.turn(PROP_MOVE_DIRECTION_DOWN)
 
                 elif event.type == QUIT:
                     running = False
