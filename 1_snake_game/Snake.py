@@ -1,5 +1,4 @@
 import pygame
-from array import array
 
 from SnakeHead import SnakeHead as head
 from SnakeBodyBlock import SnakeBodyBlock as body_block
