@@ -13,6 +13,8 @@ PROP_COORDINATES_Y = 1
 
 PROP_ORIENTATION_SOUTH = 0
 
+PROP_ROTATION_STEP = 90
+
 
 class SnakeTail:
     def __init__(self, parent_screen, position):
@@ -46,4 +48,4 @@ class SnakeTail:
     def rotate_tail(self, orientation = -1):
         if orientation != -1:
             self.set_orientation(orientation)
-        self.snake_tail = pygame.transform.rotate(self.snake_tail_init, 90 * self.orientation)
+        self.snake_tail = pygame.transform.rotate(self.snake_tail_init, (PROP_ROTATION_STEP * self.orientation))

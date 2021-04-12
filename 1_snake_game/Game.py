@@ -6,7 +6,7 @@ from Snake import Snake
 from Rock import Rock
 
 COLOUR_BG_SCORE = (200, 200, 200)
-COLOUR_FONT_SCORE = (68, 165, 108)
+COLOUR_FONT_SCORE = (255, 00, 00)
 
 DIR_RESOURCES = "resources/"
 FILE_IMAGE_SCORE_TEXT = DIR_RESOURCES + "scoreText.jpg"
@@ -23,7 +23,8 @@ FILE_IMAGE_SCORE_NUMBER = [
     DIR_RESOURCES + "scoreNine.jpg",
 ]
 FILE_IMAGE_BK_GAME = DIR_RESOURCES + "bgRealGrass_1000x800.jpg"
-FILE_IMAGE_BK_END = DIR_RESOURCES + "background.jpg"
+FILE_IMAGE_BK_INTRO = DIR_RESOURCES + "Intro_BK.png"
+FILE_IMAGE_BK_END = DIR_RESOURCES + "End_BK.png"
 
 FILE_SOUND_EFFECT_CRASH = DIR_RESOURCES + "crash.mp3"
 FILE_SOUND_EFFECT_DING = DIR_RESOURCES + "appleBite.mp3"
@@ -33,7 +34,7 @@ PROP_COORDINATES_X = 0
 PROP_COORDINATES_Y = 1
 
 PROP_FONT_STYLE_SCORE = "arial"
-PROP_FONT_SIZE_SCORE = 30
+PROP_FONT_SIZE_SCORE = 50
 
 PROP_MOVE_DELAY_MAX = 1
 PROP_MOVE_DELAY_MIN = 0.025
@@ -60,6 +61,10 @@ PROP_RETRIEVE_ORIENT_CURRENT = 0
 PROP_RETRIEVE_ORIENT_PREVIOUS = 1
 PROP_RETRIEVE_POS_CURRENT = 0
 PROP_RETRIEVE_POS_PREVIOUS = 1
+
+PROP_SCREEN_INTRO = 0
+PROP_SCREEN_PLAY = 1
+PROP_SCREEN_END = 2
 
 PROP_SIZE_BLOCK = 30
 PROP_SIZE_SCREEN_WIDTH = 1000
@@ -91,6 +96,7 @@ class Game:
         self.score_mid = pygame.image.load(FILE_IMAGE_SCORE_NUMBER[0]).convert()
         self.score_lsb = pygame.image.load(FILE_IMAGE_SCORE_NUMBER[0]).convert()
         self.move_delay = PROP_MOVE_DELAY_INIT
+        self.screen_current = PROP_SCREEN_INTRO # ToDo: This need to be set back to intro
         self.snake.draw()
         self.apple = Apple(self.surface)
         self.apple.draw()
@@ -139,7 +145,7 @@ class Game:
             else:
                 self.move_delay -= amount
         else:
-            self.move_delay = PROP_MOVE_DELAY_MAX / 2
+            self.move_delay = PROP_MOVE_DELAY_MAX / 8
 
     def render_background(self, image):
         bg = pygame.image.load(image)
@@ -202,18 +208,51 @@ class Game:
         self.surface.blit(self.score_mid, PROP_POSITION_SCORE_MID)
         self.surface.blit(self.score_lsb, PROP_POSITION_SCORE_LSB)
 
+    def show_intro(self):
+        self.render_background(FILE_IMAGE_BK_INTRO)
+        self.play_background_music()
+        pygame.mixer.music.pause()
+        pygame.display.flip()
+
+
     def show_game_over(self):
         self.render_background(FILE_IMAGE_BK_END)
         font = pygame.font.SysFont(PROP_FONT_STYLE_SCORE, PROP_FONT_SIZE_SCORE)
-        line1 = font.render(f"Game is over! Your score is {self.snake.length-1}", True, COLOUR_FONT_SCORE)
-        self.surface.blit(line1, (200, 300))
-        line2 = font.render("To play again press Enter. To exit press Escape!", True, COLOUR_FONT_SCORE)
-        self.surface.blit(line2, (200, 350))
+        line1 = font.render(f"Score: {self.snake.length-1}", True, COLOUR_FONT_SCORE)
+        self.surface.blit(line1, (700, 570))
 
         pygame.mixer.music.pause()
         pygame.display.flip()
 
     def run(self):
+        if self.screen_current == PROP_SCREEN_INTRO:
+            self.run_intro()
+        elif self.screen_current == PROP_SCREEN_PLAY:
+            self.run_game()
+        elif self.screen_current == PROP_SCREEN_END:
+            self.run_end()
+        else:
+            pass
+
+    def run_intro(self):
+        running = True
+        self.reset()
+        self.show_intro()
+        pygame.mixer.music.unpause()
+
+        while running:
+            for event in pygame.event.get():
+                if event.type == KEYDOWN:
+                    if event.key == K_ESCAPE:
+                        running = False
+                        self.screen_current = PROP_SCREEN_INTRO
+
+                    elif event.key == K_RETURN:
+                        running = False
+                        self.screen_current = PROP_SCREEN_PLAY
+                        self.run()
+
+    def run_game(self):
         running = True
         pause = False
 
@@ -223,20 +262,20 @@ class Game:
                     if event.key == K_ESCAPE:
                         running = False
 
-                    if event.key == K_RETURN:
+                    elif event.key == K_RETURN:
                         pause = False
                         pygame.mixer.music.unpause()
 
-                    if event.key == K_LEFT:
+                    elif event.key == K_LEFT:
                         self.snake.turn(PROP_MOVE_DIRECTION_LEFT)
 
-                    if event.key == K_RIGHT:
+                    elif event.key == K_RIGHT:
                         self.snake.turn(PROP_MOVE_DIRECTION_RIGHT)
 
-                    if event.key == K_UP:
+                    elif event.key == K_UP:
                         self.snake.turn(PROP_MOVE_DIRECTION_UP)
 
-                    if event.key == K_DOWN:
+                    elif event.key == K_DOWN:
                         self.snake.turn(PROP_MOVE_DIRECTION_DOWN)
 
                 elif event.type == QUIT:
@@ -252,3 +291,24 @@ class Game:
                 self.reset()
 
             sleep(self.move_delay)
+
+    def run_end(self):
+        running = True
+        self.reset()
+        self.show_game_over()
+        while running:
+            for event in pygame.event.get():
+                if event.type == KEYDOWN:
+                    if event.key == K_ESCAPE:
+                        running = False
+                        self.screen_current = PROP_SCREEN_INTRO
+
+                    elif event.key == K_RETURN:
+                        running = False
+                        self.screen_current = PROP_SCREEN_PLAY
+                        self.run()
+
+
+
+
+
