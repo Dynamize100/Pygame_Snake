@@ -5,7 +5,7 @@ Snake and apple is a simple game where when snake eats an apple it gets longer a
 
 **Final source code is in 8_final_code_background_music.py**
 
-![](game_preview.gif)
+![](../OldSolutions/game_preview.gif)
 
 ### Exercise
 
