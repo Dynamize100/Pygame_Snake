@@ -28,3 +28,9 @@ https://www.youtube.com/watch?v=8dfePlONtls&ab_channel=freeCodeCamp.org
 Font
 https://www.flamingtext.com/logo/Design-Dracula
 
+Game Over Snake
+https://hdqwalls.com/wallpapers/boa-green-snake-5k-qk.jpg
+
+Start Screen Snake
+https://www.futurity.org/wp/wp-content/uploads/2017/10/snake-close-up_1600.jpg
+

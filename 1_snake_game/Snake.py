@@ -25,17 +25,18 @@ PROP_RETRIEVE_POS_PREVIOUS = 1
 
 PROP_SIZE_BLOCK = 30
 PROP_SIZE_SCREEN_WIDTH = 1000
-PROP_SIZE_SCREEN_HEIGHT = 800
+PROP_SIZE_SCREEN_HEIGHT = 900
 
 class Snake:
     def __init__(self, parent_screen, length):
         self.parent_screen = parent_screen
         self.length = length
-        self.direction = PROP_MOVE_DIRECTION_DOWN
-        self.position = (
-            randint(1, int(PROP_SIZE_SCREEN_WIDTH / PROP_SIZE_BLOCK) - 1) * PROP_SIZE_BLOCK,
-            randint(1, int(PROP_SIZE_SCREEN_HEIGHT / PROP_SIZE_BLOCK) - 1) * PROP_SIZE_BLOCK
-        )
+        self.direction = PROP_MOVE_DIRECTION_RIGHT
+        #self.position = (
+        #    randint(3, int(PROP_SIZE_SCREEN_WIDTH / PROP_SIZE_BLOCK) - 3) * PROP_SIZE_BLOCK,
+        #    randint(3, int(PROP_SIZE_SCREEN_HEIGHT / PROP_SIZE_BLOCK) - 3) * PROP_SIZE_BLOCK
+        #)
+        self.position = (0, (PROP_SIZE_SCREEN_HEIGHT+PROP_SIZE_BLOCK)/2)
         self.head = head(self.parent_screen, self.position)
         self.body = [body_block(self.parent_screen, self.position)] * (self.length)
         self.tail = tail(self.parent_screen, self.position)

@@ -9,22 +9,22 @@ COLOUR_BG_SCORE = (200, 200, 200)
 COLOUR_FONT_SCORE = (255, 00, 00)
 
 DIR_RESOURCES = "resources/"
-FILE_IMAGE_SCORE_TEXT = DIR_RESOURCES + "scoreText.jpg"
+FILE_IMAGE_SCORE_TEXT = DIR_RESOURCES + "scoreText.png"
 FILE_IMAGE_SCORE_NUMBER = [
-    DIR_RESOURCES + "scoreZero.jpg",
-    DIR_RESOURCES + "scoreOne.jpg",
-    DIR_RESOURCES + "scoreTwo.jpg",
-    DIR_RESOURCES + "scoreThree.jpg",
-    DIR_RESOURCES + "scoreFour.jpg",
-    DIR_RESOURCES + "scoreFive.jpg",
-    DIR_RESOURCES + "scoreSix.jpg",
-    DIR_RESOURCES + "scoreSeven.jpg",
-    DIR_RESOURCES + "scoreEight.jpg",
-    DIR_RESOURCES + "scoreNine.jpg",
+    DIR_RESOURCES + "scoreZero.png",
+    DIR_RESOURCES + "scoreOne.png",
+    DIR_RESOURCES + "scoreTwo.png",
+    DIR_RESOURCES + "scoreThree.png",
+    DIR_RESOURCES + "scoreFour.png",
+    DIR_RESOURCES + "scoreFive.png",
+    DIR_RESOURCES + "scoreSix.png",
+    DIR_RESOURCES + "scoreSeven.png",
+    DIR_RESOURCES + "scoreEight.png",
+    DIR_RESOURCES + "scoreNine.png",
 ]
-FILE_IMAGE_BK_GAME = DIR_RESOURCES + "bgRealGrass_1000x800.jpg"
-FILE_IMAGE_BK_INTRO = DIR_RESOURCES + "Intro_BK.png"
-FILE_IMAGE_BK_END = DIR_RESOURCES + "End_BK.png"
+FILE_IMAGE_BK_GAME = DIR_RESOURCES + "Main_BK_1000x900.png"
+FILE_IMAGE_BK_INTRO = DIR_RESOURCES + "Intro_BK_1000x900.png"
+FILE_IMAGE_BK_END = DIR_RESOURCES + "End_BK_1000x900.png"
 
 FILE_SOUND_EFFECT_CRASH = DIR_RESOURCES + "crash.mp3"
 FILE_SOUND_EFFECT_DING = DIR_RESOURCES + "appleBite.mp3"
@@ -52,10 +52,15 @@ PROP_MOVE_SPEED_UP = 1
 PROP_MOVE_SPEED_UP_THRESHOLD = 3
 
 PROP_POSITION_SCORE = (850, 10)
-PROP_POSITION_SCORE_TEXT = (620, 10)
-PROP_POSITION_SCORE_MSB = (820, 10)
-PROP_POSITION_SCORE_MID = (880, 10)
-PROP_POSITION_SCORE_LSB = (940, 10)
+PROP_POS_PLAY_SCORE_TEXT = (570, 2)
+PROP_POS_PLAY_SCORE_MSB = (780, 10)
+PROP_POS_PLAY_SCORE_MID = (840, 10)
+PROP_POS_PLAY_SCORE_LSB = (900, 10)
+
+PROP_POS_END_SCORE_TEXT = (290, 392)
+PROP_POS_END_SCORE_MSB = (500, 400)
+PROP_POS_END_SCORE_MID = (560, 400)
+PROP_POS_END_SCORE_LSB = (620, 400)
 
 PROP_RETRIEVE_ORIENT_CURRENT = 0
 PROP_RETRIEVE_ORIENT_PREVIOUS = 1
@@ -68,9 +73,11 @@ PROP_SCREEN_END = 2
 
 PROP_SIZE_BLOCK = 30
 PROP_SIZE_SCREEN_WIDTH = 1000
-PROP_SIZE_SCREEN_HEIGHT = 800
+PROP_SIZE_SCREEN_HEIGHT = 900
 PROP_SIZE_SCREEN = (PROP_SIZE_SCREEN_WIDTH, PROP_SIZE_SCREEN_HEIGHT)
 PROP_SIZE_SNAKE_INIT = 1
+PROP_SIZE_FLOOR_MUL = 2
+PROP_SIZE_TITLE_MUL = 4
 
 PROP_SOUND_MUSIC_BG_LOOP = -1
 PROP_SOUND_MUSIC_BG_START = 2
@@ -91,10 +98,10 @@ class Game:
 
         self.surface = pygame.display.set_mode(PROP_SIZE_SCREEN)
         self.snake = Snake(self.surface, PROP_SIZE_SNAKE_INIT)
-        self.score_text = pygame.image.load(FILE_IMAGE_SCORE_TEXT).convert()
-        self.score_msb = pygame.image.load(FILE_IMAGE_SCORE_NUMBER[0]).convert()
-        self.score_mid = pygame.image.load(FILE_IMAGE_SCORE_NUMBER[0]).convert()
-        self.score_lsb = pygame.image.load(FILE_IMAGE_SCORE_NUMBER[0]).convert()
+        self.score_text = pygame.image.load(FILE_IMAGE_SCORE_TEXT).convert_alpha()
+        self.score_msb = pygame.image.load(FILE_IMAGE_SCORE_NUMBER[0]).convert_alpha()
+        self.score_mid = pygame.image.load(FILE_IMAGE_SCORE_NUMBER[0]).convert_alpha()
+        self.score_lsb = pygame.image.load(FILE_IMAGE_SCORE_NUMBER[0]).convert_alpha()
         self.move_delay = PROP_MOVE_DELAY_INIT
         self.screen_current = PROP_SCREEN_INTRO # ToDo: This need to be set back to intro
         self.snake.draw()
@@ -120,6 +127,7 @@ class Game:
         self.apple = Apple(self.surface)
         self.rock = Rock(self.surface)
         self.adjust_speed(PROP_MOVE_SPEED_RESET, None)
+        self.snake.length = 1
 
     def is_collision(self, snake, object):
         if snake[PROP_COORDINATES_X] >= object[PROP_COORDINATES_X] and snake[PROP_COORDINATES_X] < object[PROP_COORDINATES_X] + PROP_SIZE_BLOCK:
@@ -128,8 +136,8 @@ class Game:
         return False
 
     def is_boundary_collision(self, snake, screen_size):
-        if snake[PROP_COORDINATES_X] < 0 or snake[PROP_COORDINATES_X] + PROP_SIZE_BLOCK > screen_size[PROP_COORDINATES_X] or \
-                snake[PROP_COORDINATES_Y] < 0 or snake[PROP_COORDINATES_Y] > screen_size[PROP_COORDINATES_Y]:
+        if snake[PROP_COORDINATES_X] < PROP_SIZE_BLOCK or snake[PROP_COORDINATES_X] + PROP_SIZE_BLOCK > screen_size[PROP_COORDINATES_X]-PROP_SIZE_BLOCK or \
+                snake[PROP_COORDINATES_Y] < PROP_SIZE_BLOCK*PROP_SIZE_TITLE_MUL or snake[PROP_COORDINATES_Y] > screen_size[PROP_COORDINATES_Y]-PROP_SIZE_BLOCK*PROP_SIZE_FLOOR_MUL:
             return True
         return False
 
@@ -153,7 +161,7 @@ class Game:
 
     def play(self):
         self.render_background(FILE_IMAGE_BK_GAME)
-        self.display_score()
+        self.display_score("Play")
         self.apple.draw()
         self.rock.draw()
         self.snake.walk()
@@ -165,14 +173,14 @@ class Game:
             self.play_sound(SOUND_EFFECT_DING)
 
             if self.snake.length > 99:
-                self.score_mid = pygame.image.load(FILE_IMAGE_SCORE_NUMBER[int((self.snake.length - self.snake.length % 100)/100)]).convert()
-                self.score_mid = pygame.image.load(FILE_IMAGE_SCORE_NUMBER[int((self.snake.length - self.snake.length % 10)/10)]).convert()
-                self.score_lsb = pygame.image.load(FILE_IMAGE_SCORE_NUMBER[self.snake.length % 10]).convert()
+                self.score_mid = pygame.image.load(FILE_IMAGE_SCORE_NUMBER[int((self.snake.length - self.snake.length % 100)/100)]).convert_alpha()
+                self.score_mid = pygame.image.load(FILE_IMAGE_SCORE_NUMBER[int((self.snake.length - self.snake.length % 10)/10)]).convert_alpha()
+                self.score_lsb = pygame.image.load(FILE_IMAGE_SCORE_NUMBER[self.snake.length % 10]).convert_alpha()
             elif self.snake.length > 9:
-                self.score_mid = pygame.image.load(FILE_IMAGE_SCORE_NUMBER[int((self.snake.length - self.snake.length % 10)/10)]).convert()
-                self.score_lsb = pygame.image.load(FILE_IMAGE_SCORE_NUMBER[self.snake.length % 10]).convert()
+                self.score_mid = pygame.image.load(FILE_IMAGE_SCORE_NUMBER[int((self.snake.length - self.snake.length % 10)/10)]).convert_alpha()
+                self.score_lsb = pygame.image.load(FILE_IMAGE_SCORE_NUMBER[self.snake.length % 10]).convert_alpha()
             else:
-                self.score_lsb = pygame.image.load(FILE_IMAGE_SCORE_NUMBER[self.snake.length]).convert()
+                self.score_lsb = pygame.image.load(FILE_IMAGE_SCORE_NUMBER[self.snake.length]).convert_alpha()
 
             # speed up the snake every x eating events
             if self.snake.length % PROP_MOVE_SPEED_UP_THRESHOLD == 0:
@@ -202,11 +210,22 @@ class Game:
             self.play_sound(SOUND_EFFECT_CRASH)
             raise Exception("Snake collided with the boundary")
 
-    def display_score(self):
-        self.surface.blit(self.score_text, PROP_POSITION_SCORE_TEXT)
-        self.surface.blit(self.score_msb, PROP_POSITION_SCORE_MSB)
-        self.surface.blit(self.score_mid, PROP_POSITION_SCORE_MID)
-        self.surface.blit(self.score_lsb, PROP_POSITION_SCORE_LSB)
+    def display_score(self, screen):
+        if screen == "Play":
+            text = PROP_POS_PLAY_SCORE_TEXT
+            msb = PROP_POS_PLAY_SCORE_MSB
+            mid = PROP_POS_PLAY_SCORE_MID
+            lsb = PROP_POS_PLAY_SCORE_LSB
+        elif screen == "End":
+            text = PROP_POS_END_SCORE_TEXT
+            msb = PROP_POS_END_SCORE_MSB
+            mid = PROP_POS_END_SCORE_MID
+            lsb = PROP_POS_END_SCORE_LSB
+
+        self.surface.blit(self.score_text, text)
+        self.surface.blit(self.score_msb, msb)
+        self.surface.blit(self.score_mid, mid)
+        self.surface.blit(self.score_lsb, lsb)
 
     def show_intro(self):
         self.render_background(FILE_IMAGE_BK_INTRO)
@@ -217,9 +236,7 @@ class Game:
 
     def show_game_over(self):
         self.render_background(FILE_IMAGE_BK_END)
-        font = pygame.font.SysFont(PROP_FONT_STYLE_SCORE, PROP_FONT_SIZE_SCORE)
-        line1 = font.render(f"Score: {self.snake.length-1}", True, COLOUR_FONT_SCORE)
-        self.surface.blit(line1, (700, 570))
+        self.display_score("End")
 
         pygame.mixer.music.pause()
         pygame.display.flip()
@@ -307,8 +324,3 @@ class Game:
                         running = False
                         self.screen_current = PROP_SCREEN_PLAY
                         self.run()
-
-
-
-
-
