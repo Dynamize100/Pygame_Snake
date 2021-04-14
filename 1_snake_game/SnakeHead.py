@@ -2,7 +2,7 @@ import pygame
 
 
 DIR_RESOURCES = "resources/"
-FILE_IMAGE_SPRITE_HEAD = DIR_RESOURCES + "snakeHeadSm.jpg"
+FILE_IMAGE_SPRITE_HEAD = DIR_RESOURCES + "snakeHeadSm.png"
 
 PROP_SIZE_BLOCK = 30
 PROP_SIZE_SCREEN_WIDTH = 1000
@@ -23,7 +23,7 @@ class SnakeHead:
         self.parent_screen = parent_screen
         self.orientation = PROP_ORIENTATION_SOUTH
         self.prev_orientation = self.orientation
-        self.snake_head_init = pygame.image.load(FILE_IMAGE_SPRITE_HEAD).convert()
+        self.snake_head_init = pygame.image.load(FILE_IMAGE_SPRITE_HEAD).convert_alpha()
         self.snake_head = self.snake_head_init
         self.prev_x = self.x = position[PROP_COORDINATES_X]
         self.prev_y = self.y = position[PROP_COORDINATES_Y]

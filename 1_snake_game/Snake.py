@@ -6,9 +6,6 @@ from SnakeTail import SnakeTail as tail
 from random import randint
 
 DIR_RESOURCES = "resources/"
-FILE_IMAGE_SPRITE_HEAD = DIR_RESOURCES + "snakeHeadSm.jpg"
-FILE_IMAGE_SPRITE_BODY = DIR_RESOURCES + "snakeBodySm.jpg"
-FILE_IMAGE_SPRITE_TAIL = DIR_RESOURCES + "snakeTailSm.jpg"
 
 PROP_MOVE_DIRECTION_DOWN = 0
 PROP_MOVE_DIRECTION_RIGHT = 1
@@ -32,6 +29,7 @@ class Snake:
         self.parent_screen = parent_screen
         self.length = length
         self.direction = PROP_MOVE_DIRECTION_RIGHT
+        self.colour = "Blank"
         #self.position = (
         #    randint(3, int(PROP_SIZE_SCREEN_WIDTH / PROP_SIZE_BLOCK) - 3) * PROP_SIZE_BLOCK,
         #    randint(3, int(PROP_SIZE_SCREEN_HEIGHT / PROP_SIZE_BLOCK) - 3) * PROP_SIZE_BLOCK
@@ -66,6 +64,8 @@ class Snake:
             self.body[i].set_position(self.body[i + 1].get_position()[PROP_RETRIEVE_POS_PREVIOUS])
             self.body[i].set_orientation(self.body[i + 1].get_orientation()[PROP_RETRIEVE_ORIENT_PREVIOUS])
             self.body[i].rotate_body_block()
+            self.body[i+1].set_colour(self.colour)
+        self.body[0].set_colour(self.colour)
 
         self.tail.set_position(self.body[0].get_position()[PROP_RETRIEVE_POS_PREVIOUS])
         self.tail.set_orientation(self.body[0].get_orientation()[PROP_RETRIEVE_ORIENT_PREVIOUS])
@@ -84,3 +84,11 @@ class Snake:
     def increase_length(self):
         self.length += 1
         self.body.insert(0, body_block(self.parent_screen, self.position))
+
+    def get_colour(self):
+        return self.colour
+
+    def set_colour(self, colour):
+        self.colour = colour
+        for i in range(len(self.body) - 2, -1, -1):
+            self.body[i].set_colour(colour)

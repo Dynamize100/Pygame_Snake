@@ -1,8 +1,7 @@
 import pygame
-from random import randint
 
 DIR_RESOURCES = "resources/"
-FILE_IMAGE_SPRITE_TAIL = DIR_RESOURCES + "snakeTailSm.jpg"
+FILE_IMAGE_SPRITE_TAIL = DIR_RESOURCES + "snakeTailSm.png"
 
 PROP_SIZE_BLOCK = 30
 PROP_SIZE_SCREEN_WIDTH = 1000
@@ -21,7 +20,7 @@ class SnakeTail:
         self.parent_screen = parent_screen
         self.orientation = PROP_ORIENTATION_SOUTH
         self.prev_orientation = self.orientation
-        self.snake_tail_init = pygame.image.load(FILE_IMAGE_SPRITE_TAIL).convert()
+        self.snake_tail_init = pygame.image.load(FILE_IMAGE_SPRITE_TAIL).convert_alpha()
         self.snake_tail = self.snake_tail_init
         self.prev_x = self.x = position[0]
         self.prev_y = self.y = position[1]

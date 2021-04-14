@@ -18,6 +18,9 @@ class Apple:
         self.x = (randint(3, int(PROP_SIZE_SCREEN_WIDTH / PROP_SIZE_BLOCK) - 3) * PROP_SIZE_BLOCK)
         self.y = (randint(5, int(PROP_SIZE_SCREEN_HEIGHT / PROP_SIZE_BLOCK) - 3) * PROP_SIZE_BLOCK)+PROP_SCREEN_OFFSET
 
+    def get_position(self):
+        return (self.x, self.y)
+
     def draw(self):
         self.parent_screen.blit(self.image, (self.x, self.y))
         pygame.display.flip()
